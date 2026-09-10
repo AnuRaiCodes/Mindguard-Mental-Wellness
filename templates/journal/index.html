@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}Journal{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <h2 class="fw-bold mb-0"><i class="bi bi-journal-heart text-primary me-2"></i>My Journal</h2>
+        <div class="d-flex gap-2">
+            <button class="btn btn-outline-secondary" onclick="loadPrompt()">
+                <i class="bi bi-magic me-1"></i>Writing Prompt
+            </button>
+            <a href="{{ url_for('journal.new_entry') }}" class="btn btn-mindguard">
+                <i class="bi bi-plus-circle me-2"></i>New Entry
+            </a>
+        </div>
+    </div>
+
+    <!-- Prompt Card (hidden by default) -->
+    <div id="prompt-card" class="alert alert-info border-0 d-none mb-4">
+        <div class="d-flex align-items-start gap-3">
+            <span class="fs-4">💭</span>
+            <div>
+                <strong>Today's Writing Prompt:</strong>
+                <p class="mb-0 mt-1" id="prompt-text"></p>
+            </div>
+        </div>
+    </div>
+
+    {% if entries %}
+    <div class="row g-3">
+        {% for entry in entries %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card border-0 shadow-sm h-100 journal-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="badge bg-light text-dark border">
+                            {{ '😔' if entry.mood_score <= 3 else '😐' if entry.mood_score <= 6 else '😊' }}
+                            {{ entry.mood_score }}/10
+                        </span>
+                        <small class="text-muted">{{ entry.created_at.strftime('%b %d, %Y') }}</small>
+                    </div>
+                    <h6 class="card-title fw-bold">{{ entry.title[:60] }}</h6>
+                    <p class="card-text text-muted small">{{ entry.content[:120] }}{% if entry.content|length > 120 %}…{% endif %}</p>
+                    {% if entry.tags %}
+                    <div class="d-flex flex-wrap gap-1 mb-2">
+                        {% for tag in entry.tags.split(',')[:3] %}
+                        <span class="badge bg-light text-secondary border">{{ tag.strip() }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    {% if entry.is_private %}
+                    <span class="badge bg-secondary"><i class="bi bi-lock me-1"></i>Private</span>
+                    {% endif %}
+                </div>
+                <div class="card-footer bg-white border-0 d-flex gap-2">
+                    <a href="{{ url_for('journal.view_entry', entry_id=entry.id) }}" class="btn btn-sm btn-outline-primary flex-grow-1">
+                        <i class="bi bi-eye me-1"></i>Read
+                    </a>
+                    <a href="{{ url_for('journal.edit_entry', entry_id=entry.id) }}" class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-pencil"></i>
+                    </a>
+                    <form method="POST" action="{{ url_for('journal.delete_entry', entry_id=entry.id) }}" onsubmit="return confirm('Delete this entry?')">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <div class="mb-4" style="font-size:4rem;">✍️</div>
+        <h4 class="fw-bold">Your Journal Awaits</h4>
+        <p class="text-muted">Journaling helps process emotions, track patterns, and gain clarity.<br>Start your first entry today!</p>
+        <div class="d-flex gap-2 justify-content-center mt-3">
+            <button class="btn btn-outline-info" onclick="loadPrompt()">Get a Writing Prompt</button>
+            <a href="{{ url_for('journal.new_entry') }}" class="btn btn-mindguard">Write First Entry</a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+async function loadPrompt() {
+    const resp = await fetch('/journal/prompts');
+    const data = await resp.json();
+    document.getElementById('prompt-text').textContent = data.prompt;
+    document.getElementById('prompt-card').classList.remove('d-none');
+}
+</script>
+{% endblock %}

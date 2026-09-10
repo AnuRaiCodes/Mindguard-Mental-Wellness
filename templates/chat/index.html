@@ -1,0 +1,305 @@
+{% extends "base.html" %}
+{% block title %}AI Chat{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-2" style="height: calc(100vh - 120px);">
+    <div class="row h-100 g-3">
+        <!-- Sidebar: Sessions -->
+        <div class="col-md-3 d-none d-md-flex flex-column" style="max-height: 100%;">
+            <div class="card border-0 shadow-sm h-100 d-flex flex-column">
+                <div class="card-header bg-mindguard text-white border-0 d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0 fw-bold"><i class="bi bi-chat-heart me-2"></i>Conversations</h6>
+                    <button class="btn btn-sm btn-light" id="new-chat-btn" title="New Chat">
+                        <i class="bi bi-plus-lg"></i>
+                    </button>
+                </div>
+                <div class="card-body p-0 overflow-auto flex-grow-1">
+                    <div id="sessions-list">
+                        {% if sessions %}
+                        {% for s in sessions %}
+                        <div class="session-item p-3 border-bottom cursor-pointer {% if loop.first %}active-session{% endif %}"
+                             data-session-id="{{ s.id }}" onclick="loadSession({{ s.id }})">
+                            <div class="d-flex align-items-start">
+                                <span class="me-2">💬</span>
+                                <div class="overflow-hidden">
+                                    <div class="text-truncate fw-medium small">{{ s.title }}</div>
+                                    <small class="text-muted">{{ s.updated_at.strftime('%b %d') }}</small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        {% else %}
+                        <div class="p-3 text-center text-muted small">
+                            Click + to start a new conversation
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <!-- Agent Info -->
+                <div class="card-footer bg-white border-top">
+                    <div class="small text-muted">
+                        <div id="current-agent-info" class="d-flex align-items-center gap-2">
+                            <span class="badge bg-success">💚 Ready</span>
+                            <span>MindGuard AI</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Area -->
+        <div class="col-md-9 d-flex flex-column" style="max-height: 100%;">
+            <div class="card border-0 shadow-sm h-100 d-flex flex-column">
+                <!-- Chat Header -->
+                <div class="card-header bg-white border-bottom d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="avatar-lg bg-mindguard rounded-circle d-flex align-items-center justify-content-center text-white">
+                            🧠
+                        </div>
+                        <div>
+                            <h6 class="mb-0 fw-bold">MindGuard AI</h6>
+                            <small class="text-success"><i class="bi bi-circle-fill me-1" style="font-size:0.5rem;"></i>Always here for you</small>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <span id="demo-badge" class="badge bg-secondary d-none">DEMO MODE</span>
+                        <button class="btn btn-sm btn-outline-danger" id="crisis-help-btn" onclick="showCrisisBanner()">
+                            <i class="bi bi-telephone-forward me-1"></i>Crisis Help
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Messages Area -->
+                <div class="card-body overflow-auto flex-grow-1 p-3" id="messages-container">
+                    <!-- Welcome message -->
+                    <div id="welcome-message" class="text-center py-5">
+                        <div class="mb-4">🧠</div>
+                        <h4 class="fw-bold text-mindguard mb-3">Hello, {{ current_user.display_name or current_user.username }} 💚</h4>
+                        <p class="text-muted mb-4">I'm MindGuard AI, your mental health awareness companion.<br>I'm here to listen, support, and provide information.</p>
+                        <div class="row g-2 justify-content-center">
+                            <div class="col-auto">
+                                <button class="btn btn-outline-success btn-sm suggestion-btn" onclick="sendSuggestion('I am feeling stressed and overwhelmed')">
+                                    😰 I'm feeling stressed
+                                </button>
+                            </div>
+                            <div class="col-auto">
+                                <button class="btn btn-outline-primary btn-sm suggestion-btn" onclick="sendSuggestion('Tell me about anxiety and how to manage it')">
+                                    🧠 Learn about anxiety
+                                </button>
+                            </div>
+                            <div class="col-auto">
+                                <button class="btn btn-outline-info btn-sm suggestion-btn" onclick="sendSuggestion('Guide me through a breathing exercise')">
+                                    🌬️ Breathing exercise
+                                </button>
+                            </div>
+                            <div class="col-auto">
+                                <button class="btn btn-outline-warning btn-sm suggestion-btn" onclick="sendSuggestion('I need to find a therapist or counselor in India')">
+                                    🏥 Find support
+                                </button>
+                            </div>
+                        </div>
+                        <p class="text-muted mt-4 small"><i class="bi bi-shield-lock me-1"></i>Your conversations are private and secure.</p>
+                    </div>
+                    <!-- Messages will be injected here -->
+                    <div id="chat-messages"></div>
+                    <div id="typing-indicator" class="d-none mb-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="avatar-sm bg-mindguard rounded-circle d-flex align-items-center justify-content-center text-white">🧠</div>
+                            <div class="typing-bubble">
+                                <span class="typing-dot"></span>
+                                <span class="typing-dot"></span>
+                                <span class="typing-dot"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Input Area -->
+                <div class="card-footer bg-white border-top p-3">
+                    <div class="d-flex gap-2 align-items-end">
+                        <textarea
+                            id="user-input"
+                            class="form-control"
+                            rows="2"
+                            placeholder="Share how you're feeling, ask a question, or just talk..."
+                            style="resize:none; max-height:120px;"
+                            onkeydown="handleKeyDown(event)"
+                        ></textarea>
+                        <button class="btn btn-mindguard px-3" id="send-btn" onclick="sendMessage()" style="height:56px;">
+                            <i class="bi bi-send-fill"></i>
+                        </button>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mt-2">
+                        <small class="text-muted"><i class="bi bi-shield-lock me-1"></i>Private & confidential</small>
+                        <small class="text-muted" id="agent-status-text">MindGuard AI ready</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentSessionId = {% if sessions %}{{ sessions[0].id if sessions else 'null' }}{% else %}null{% endif %};
+let isWaitingForResponse = false;
+
+// Check demo mode
+fetch('/api/demo-status').then(r => r.json()).then(d => {
+    if (d.demo_mode) document.getElementById('demo-badge').classList.remove('d-none');
+});
+
+// Load first session if available
+document.addEventListener('DOMContentLoaded', () => {
+    if (currentSessionId) loadSession(currentSessionId);
+    document.getElementById('new-chat-btn').addEventListener('click', createNewSession);
+});
+
+async function createNewSession() {
+    const resp = await fetch('/chat/session/new', {method: 'POST', headers: {'X-CSRFToken': getCsrfToken()}});
+    const data = await resp.json();
+    currentSessionId = data.session_id;
+    document.getElementById('chat-messages').innerHTML = '';
+    document.getElementById('welcome-message').style.display = 'block';
+    updateSessionList();
+}
+
+async function loadSession(sessionId) {
+    currentSessionId = sessionId;
+    document.getElementById('welcome-message').style.display = 'none';
+    document.getElementById('chat-messages').innerHTML = '';
+
+    const resp = await fetch(`/chat/session/${sessionId}/messages`);
+    const data = await resp.json();
+
+    data.messages.forEach(msg => renderMessage(msg.role, msg.content, msg.agent_used));
+    scrollToBottom();
+
+    // Highlight active session
+    document.querySelectorAll('.session-item').forEach(el => el.classList.remove('active-session'));
+    const activeEl = document.querySelector(`[data-session-id="${sessionId}"]`);
+    if (activeEl) activeEl.classList.add('active-session');
+}
+
+async function sendMessage() {
+    const input = document.getElementById('user-input');
+    const message = input.value.trim();
+    if (!message || isWaitingForResponse) return;
+
+    input.value = '';
+    input.style.height = 'auto';
+
+    // Hide welcome message
+    document.getElementById('welcome-message').style.display = 'none';
+
+    // Render user message
+    renderMessage('user', message);
+    showTypingIndicator(true);
+    isWaitingForResponse = true;
+    document.getElementById('send-btn').disabled = true;
+
+    try {
+        const csrfToken = getCsrfToken();
+        const resp = await fetch('/chat/send', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken,
+            },
+            body: JSON.stringify({
+                message: message,
+                session_id: currentSessionId,
+            }),
+        });
+
+        const data = await resp.json();
+        currentSessionId = data.session_id;
+
+        showTypingIndicator(false);
+        renderMessage('assistant', data.response, data.agent_used, data.agent_display_name, data.agent_icon);
+
+        // Show crisis banner for high risk
+        if (data.risk_level === 'high') showCrisisBanner();
+
+        // Update agent info
+        updateAgentInfo(data.agent_icon, data.agent_display_name);
+        updateSessionList();
+
+    } catch (err) {
+        showTypingIndicator(false);
+        renderMessage('assistant', '❌ Something went wrong. Please try again. If you need immediate help, call iCall: 9152987821');
+    } finally {
+        isWaitingForResponse = false;
+        document.getElementById('send-btn').disabled = false;
+    }
+}
+
+function renderMessage(role, content, agentUsed, agentName, agentIcon) {
+    const container = document.getElementById('chat-messages');
+    const isUser = role === 'user';
+    const div = document.createElement('div');
+    div.className = `message-wrapper d-flex mb-3 ${isUser ? 'justify-content-end' : 'justify-content-start'}`;
+
+    const icon = isUser ? '👤' : (agentIcon || '🧠');
+    const parsedContent = typeof marked !== 'undefined' ? marked.parse(content) : content.replace(/\n/g, '<br>');
+
+    div.innerHTML = `
+        <div class="d-flex align-items-end gap-2 ${isUser ? 'flex-row-reverse' : ''}">
+            <div class="avatar-sm rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+                 style="background:${isUser ? '#28a745' : '#2c3e50'}; color:white; font-size:0.9rem; width:36px; height:36px;">
+                ${icon}
+            </div>
+            <div class="message-bubble ${isUser ? 'user-bubble' : 'ai-bubble'}">
+                ${!isUser && agentName ? `<div class="agent-label mb-1"><small class="text-muted fw-semibold">${agentName}</small></div>` : ''}
+                <div class="message-content">${parsedContent}</div>
+            </div>
+        </div>`;
+
+    container.appendChild(div);
+    scrollToBottom();
+}
+
+function sendSuggestion(text) {
+    document.getElementById('user-input').value = text;
+    sendMessage();
+}
+
+function showTypingIndicator(show) {
+    document.getElementById('typing-indicator').classList.toggle('d-none', !show);
+    if (show) scrollToBottom();
+}
+
+function scrollToBottom() {
+    const c = document.getElementById('messages-container');
+    c.scrollTop = c.scrollHeight;
+}
+
+function handleKeyDown(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+    }
+}
+
+function updateAgentInfo(icon, name) {
+    document.getElementById('current-agent-info').innerHTML =
+        `<span class="badge bg-success">${icon} ${name || 'MindGuard AI'}</span>`;
+    document.getElementById('agent-status-text').textContent = name || 'MindGuard AI';
+}
+
+function showCrisisBanner() {
+    document.getElementById('crisis-banner').classList.remove('d-none');
+}
+
+async function updateSessionList() {
+    // Reload sessions sidebar
+}
+
+function getCsrfToken() {
+    return document.cookie.split('; ').find(r => r.startsWith('csrftoken='))?.split('=')[1]
+        || document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+        || '';
+}
+</script>
+{% endblock %}

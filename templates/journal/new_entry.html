@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}New Journal Entry{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="d-flex align-items-center mb-4">
+                <a href="{{ url_for('journal.index') }}" class="btn btn-outline-secondary me-3"><i class="bi bi-arrow-left"></i></a>
+                <h2 class="fw-bold mb-0">✍️ New Journal Entry</h2>
+            </div>
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <form method="POST" action="{{ url_for('journal.new_entry') }}">
+                        {{ form.hidden_tag() }}
+                        <div class="mb-3">
+                            {{ form.title.label(class="form-label fw-semibold") }}
+                            {{ form.title(class="form-control form-control-lg" + (" is-invalid" if form.title.errors else ""), placeholder="Give your entry a title…") }}
+                            {% for e in form.title.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Mood Score: <span id="mood-display" class="badge bg-success">{{ form.mood_score.data or 5 }}</span>/10</label>
+                            <input type="range" class="form-range" min="1" max="10" value="{{ form.mood_score.data or 5 }}" name="mood_score" id="mood-slider"
+                                   oninput="document.getElementById('mood-display').textContent=this.value">
+                        </div>
+                        <div class="mb-3">
+                            {{ form.content.label(class="form-label fw-semibold") }}
+                            {{ form.content(class="form-control" + (" is-invalid" if form.content.errors else ""), rows=12, placeholder="Write freely — no judgment here. This is your safe space…") }}
+                            {% for e in form.content.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+                        </div>
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-8">
+                                {{ form.tags.label(class="form-label fw-semibold") }}
+                                {{ form.tags(class="form-control", placeholder="e.g., anxiety, work, family") }}
+                            </div>
+                            <div class="col-md-4 d-flex align-items-end">
+                                <div class="form-check mt-2">
+                                    {{ form.is_private(class="form-check-input") }}
+                                    {{ form.is_private.label(class="form-check-label fw-semibold") }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-mindguard px-4">Save Entry ✍️</button>
+                            <a href="{{ url_for('journal.index') }}" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

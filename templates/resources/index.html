@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+{% block title %}Resources & Helplines{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h2 class="fw-bold mb-2"><i class="bi bi-heart-pulse text-danger me-2"></i>Support Resources & Helplines</h2>
+    <p class="text-muted mb-4">Verified mental health resources in India. You are never alone.</p>
+
+    <!-- Emergency Banner -->
+    <div class="alert alert-danger border-0 mb-4">
+        <div class="d-flex align-items-center gap-3 flex-wrap">
+            <span class="fs-3">🆘</span>
+            <div>
+                <strong>In immediate danger?</strong> Call <strong>112</strong> (Emergency) immediately.<br>
+                <small>For mental health crisis: <strong>iCall: 9152987821</strong> | <strong>Vandrevala: 1860-2662-345</strong> (24/7, FREE)</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Helplines -->
+    <h4 class="fw-bold mb-3">📞 Crisis Helplines</h4>
+    <div class="row g-3 mb-5">
+        {% for helpline in helplines %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card border-0 shadow-sm h-100 helpline-card
+                {{ 'border-start border-danger border-3' if helpline.category == 'emergency' else 'border-start border-warning border-3' if helpline.category == 'crisis' else 'border-start border-success border-3' }}">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h6 class="card-title fw-bold mb-0">{{ helpline.name }}</h6>
+                        <span class="badge {{ 'bg-danger' if helpline.category == 'emergency' else 'bg-warning text-dark' if helpline.category == 'crisis' else 'bg-success' }}">
+                            {{ helpline.category.title() }}
+                        </span>
+                    </div>
+                    <p class="text-muted small mb-2">{{ helpline.description }}</p>
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                        <a href="tel:{{ helpline.number }}" class="btn btn-sm btn-outline-success fw-bold">
+                            <i class="bi bi-telephone me-1"></i>{{ helpline.number }}
+                        </a>
+                        <small class="text-muted"><i class="bi bi-clock me-1"></i>{{ helpline.hours }}</small>
+                    </div>
+                    {% if helpline.url %}
+                    <a href="{{ helpline.url }}" target="_blank" class="btn btn-sm btn-link p-0 mt-1 small">
+                        <i class="bi bi-box-arrow-up-right me-1"></i>Visit Website
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Online Resources -->
+    <h4 class="fw-bold mb-3">🌐 Online Mental Health Platforms</h4>
+    <div class="row g-3 mb-5">
+        {% for resource in online_resources %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h6 class="fw-bold">{{ resource.name }}</h6>
+                    <p class="text-muted small">{{ resource.description }}</p>
+                    <a href="{{ resource.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-box-arrow-up-right me-1"></i>Visit
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Distress Screening -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white border-0">
+            <h5 class="mb-0 fw-bold"><i class="bi bi-clipboard-check text-primary me-2"></i>Wellness Self-Screening</h5>
+        </div>
+        <div class="card-body">
+            <p class="text-muted">These self-assessments are for <strong>awareness only</strong> — not a clinical diagnosis. Always consult a professional for proper assessment.</p>
+            <div class="d-flex gap-3 flex-wrap">
+                <button class="btn btn-outline-primary" onclick="startScreening('phq9')">
+                    <i class="bi bi-clipboard2-pulse me-2"></i>PHQ-9 (Depression Screening)
+                </button>
+                <button class="btn btn-outline-warning" onclick="startScreening('gad7')">
+                    <i class="bi bi-clipboard2-pulse me-2"></i>GAD-7 (Anxiety Screening)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Awareness Info -->
+    <div class="row g-3">
+        <div class="col-md-4">
+            <div class="card border-0 bg-light h-100 p-3">
+                <h6 class="fw-bold">🧠 Understanding Stigma</h6>
+                <p class="small text-muted">Mental health stigma prevents people from seeking help. Remember: mental health conditions are medical issues — not character flaws or weaknesses.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 bg-light h-100 p-3">
+                <h6 class="fw-bold">💚 Therapy Works</h6>
+                <p class="small text-muted">Research shows therapy (CBT, DBT, etc.) is highly effective for anxiety, depression, and many other conditions. It's okay to ask for help.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 bg-light h-100 p-3">
+                <h6 class="fw-bold">🤝 Help a Friend</h6>
+                <p class="small text-muted">If you're worried about someone, gently ask how they are. Listen without judgment. Help them connect to professional support. Stay in touch.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Screening Modal -->
+<div class="modal fade" id="screeningModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold" id="screening-title">Screening</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="screening-body">
+                <div class="text-center py-4"><div class="spinner-border text-primary"></div></div>
+            </div>
+            <div class="modal-footer border-0" id="screening-footer" style="display:none!important;">
+                <button class="btn btn-primary" onclick="submitScreening()">Get Results</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentScreeningType = null;
+let screeningQuestions = [];
+
+async function startScreening(type) {
+    currentScreeningType = type;
+    const resp = await fetch(`/api/screening/questions/${type}`);
+    const data = await resp.json();
+    screeningQuestions = data.questions;
+
+    document.getElementById('screening-title').textContent = type === 'phq9' ? 'PHQ-9 Depression Screening' : 'GAD-7 Anxiety Screening';
+    document.getElementById('screening-body').innerHTML = `
+        <div class="alert alert-warning small"><strong>Disclaimer:</strong> This is a self-assessment for awareness only, not a clinical diagnosis. For proper assessment, consult a qualified mental health professional.</div>
+        <p class="text-muted small"><strong>Scale:</strong> ${data.scale}</p>
+        <form id="screening-form">
+        ${screeningQuestions.map((q, i) => `
+            <div class="mb-4">
+                <label class="form-label fw-semibold">${i+1}. ${q}</label>
+                <div class="d-flex gap-3 flex-wrap">
+                    ${[0,1,2,3].map(v => `<div class="form-check"><input class="form-check-input" type="radio" name="q${i}" value="${v}" id="q${i}v${v}" required><label class="form-check-label" for="q${i}v${v}">${['Not at all','Several days','More than half','Nearly every day'][v]}</label></div>`).join('')}
+                </div>
+            </div>`).join('')}
+        </form>`;
+    document.getElementById('screening-footer').style.display = '';
+    document.getElementById('screening-footer').style.removeProperty('display');
+    new bootstrap.Modal(document.getElementById('screeningModal')).show();
+}
+
+async function submitScreening() {
+    const form = document.getElementById('screening-form');
+    const responses = {};
+    screeningQuestions.forEach((_, i) => {
+        const checked = form.querySelector(`input[name="q${i}"]:checked`);
+        if (checked) responses[`q${i}`] = checked.value;
+    });
+
+    const resp = await fetch('/api/screening/submit', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken()},
+        body: JSON.stringify({type: currentScreeningType, responses}),
+    });
+    const result = await resp.json();
+
+    const colors = {minimal: 'success', mild: 'warning', moderate: 'warning', 'moderately-severe': 'danger', severe: 'danger'};
+    document.getElementById('screening-body').innerHTML = `
+        <div class="text-center py-3">
+            <h2 class="fw-bold">Score: ${result.score}</h2>
+            <span class="badge bg-${colors[result.risk_level] || 'secondary'} fs-6 mb-3">${result.risk_level.replace('-', ' ').toUpperCase()}</span>
+            <p class="text-muted">${result.recommendation}</p>
+            <div class="alert alert-info small">${result.disclaimer}</div>
+            <a href="{{ url_for('resources.index') }}" class="btn btn-outline-primary">View Support Resources</a>
+        </div>`;
+}
+
+function getCsrfToken() {
+    return document.cookie.split('; ').find(r => r.startsWith('csrftoken='))?.split('=')[1] || '';
+}
+</script>
+{% endblock %}

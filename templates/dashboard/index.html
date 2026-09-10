@@ -1,0 +1,318 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Welcome Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 bg-mindguard-soft p-4 rounded-4">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                    <div>
+                        <h2 class="mb-1 fw-bold text-mindguard">Welcome back, {{ current_user.display_name or current_user.username }} 💚</h2>
+                        <p class="text-muted mb-0">How are you feeling today? Your wellbeing matters.</p>
+                    </div>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <a href="{{ url_for('chat.index') }}" class="btn btn-mindguard">
+                            <i class="bi bi-chat-heart me-2"></i>Start Chat
+                        </a>
+                        <button class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#quickMoodModal">
+                            <i class="bi bi-emoji-smile me-2"></i>Log Mood
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm h-100 text-center p-3">
+                <div class="stat-icon text-success mb-2">📊</div>
+                <h3 class="fw-bold text-success mb-0">{{ avg_mood or '—' }}</h3>
+                <small class="text-muted">Avg Mood (7d)</small>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm h-100 text-center p-3">
+                <div class="stat-icon text-primary mb-2">✍️</div>
+                <h3 class="fw-bold text-primary mb-0">{{ journal_count }}</h3>
+                <small class="text-muted">Journal Entries</small>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm h-100 text-center p-3">
+                <div class="stat-icon text-warning mb-2">🎯</div>
+                <h3 class="fw-bold text-warning mb-0">{{ active_goals|length }}</h3>
+                <small class="text-muted">Active Goals</small>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm h-100 text-center p-3">
+                <div class="stat-icon text-info mb-2">💬</div>
+                <h3 class="fw-bold text-info mb-0">{{ mood_entries|length }}</h3>
+                <small class="text-muted">Mood Logs (7d)</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Mood Chart -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-semibold"><i class="bi bi-graph-up-arrow text-success me-2"></i>Mood Trend (Last 7 Days)</h5>
+                    <a href="{{ url_for('mood.index') }}" class="btn btn-sm btn-outline-success">View All</a>
+                </div>
+                <div class="card-body">
+                    {% if mood_chart_data %}
+                    <canvas id="moodChart" height="120"></canvas>
+                    {% else %}
+                    <div class="text-center py-5 text-muted">
+                        <p class="fs-1 mb-2">📊</p>
+                        <p>No mood data yet. Start logging your mood!</p>
+                        <button class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#quickMoodModal">Log First Mood</button>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Daily Tip -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm h-100 border-start border-success border-3">
+                <div class="card-header bg-white border-0">
+                    <h5 class="mb-0 fw-semibold"><i class="bi bi-lightbulb text-warning me-2"></i>Daily Wellness Tip</h5>
+                </div>
+                <div class="card-body" id="wellness-tip-card">
+                    <div class="text-center py-3">
+                        <div class="spinner-border spinner-border-sm text-success" id="tip-loading"></div>
+                    </div>
+                </div>
+                <div class="card-footer bg-white border-0">
+                    <button class="btn btn-sm btn-outline-success" onclick="loadWellnessTip()">
+                        <i class="bi bi-arrow-clockwise me-1"></i>New Tip
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Chats -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-semibold"><i class="bi bi-chat-heart text-primary me-2"></i>Recent Conversations</h5>
+                    <a href="{{ url_for('chat.index') }}" class="btn btn-sm btn-outline-primary">All Chats</a>
+                </div>
+                <div class="card-body p-0">
+                    {% if recent_chats %}
+                    <ul class="list-group list-group-flush">
+                        {% for chat in recent_chats %}
+                        <li class="list-group-item list-group-item-action">
+                            <a href="{{ url_for('chat.session_view', session_id=chat.id) }}" class="text-decoration-none">
+                                <div class="d-flex align-items-center">
+                                    <span class="me-2">💬</span>
+                                    <div>
+                                        <div class="fw-medium text-dark">{{ chat.title[:50] }}</div>
+                                        <small class="text-muted">{{ chat.updated_at.strftime('%b %d, %Y') }}</small>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <div class="p-4 text-center text-muted">
+                        <p>No conversations yet.</p>
+                        <a href="{{ url_for('chat.index') }}" class="btn btn-sm btn-mindguard">Start a Conversation</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Wellness Goals -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-semibold"><i class="bi bi-check2-circle text-warning me-2"></i>Wellness Goals</h5>
+                    <button class="btn btn-sm btn-outline-warning" data-bs-toggle="modal" data-bs-target="#addGoalModal">
+                        <i class="bi bi-plus"></i> Add Goal
+                    </button>
+                </div>
+                <div class="card-body">
+                    {% if active_goals %}
+                    {% for goal in active_goals[:4] %}
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="fw-medium">{{ goal.title[:40] }}</span>
+                            <small class="text-muted">{{ goal.completed_days }}/{{ goal.target_days }}d</small>
+                        </div>
+                        <div class="progress" style="height:8px;">
+                            <div class="progress-bar bg-success" style="width:{{ (goal.completed_days / goal.target_days * 100)|round }}%"></div>
+                        </div>
+                        <button class="btn btn-xs btn-outline-success mt-1 py-0 px-2" onclick="completeGoalDay({{ goal.id }}, this)" style="font-size:0.75rem;">✓ Mark Today</button>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <div class="text-center py-3 text-muted">
+                        <p>No active goals. Set a wellness goal!</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Mental Health Awareness Section -->
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0">
+                    <h5 class="mb-0 fw-semibold"><i class="bi bi-info-circle text-info me-2"></i>Mental Health Awareness</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <div class="awareness-card p-3 rounded-3 bg-light h-100">
+                                <h6 class="fw-bold">🧠 Did You Know?</h6>
+                                <p class="small text-muted mb-0">1 in 4 people will experience a mental health condition at some point. Mental health conditions are common, treatable, and nothing to be ashamed of.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="awareness-card p-3 rounded-3 bg-light h-100">
+                                <h6 class="fw-bold">💚 Self-Care Reminder</h6>
+                                <p class="small text-muted mb-0">Small steps count. Getting enough sleep, eating well, and moving your body are powerful foundations for mental wellbeing.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="awareness-card p-3 rounded-3 bg-light h-100">
+                                <h6 class="fw-bold">🆘 In Crisis?</h6>
+                                <p class="small text-muted mb-0">If you're struggling, reach out. <strong>iCall: 9152987821</strong> and <strong>Vandrevala: 1860-2662-345</strong> are here for you 24/7.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Mood Modal -->
+<div class="modal fade" id="quickMoodModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold">📊 Log Your Mood</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="quickMoodForm">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">How are you feeling right now? <span id="mood-score-display" class="badge bg-success">5</span></label>
+                        <input type="range" class="form-range" min="1" max="10" value="5" id="quick-mood-score" name="mood_score"
+                               oninput="document.getElementById('mood-score-display').textContent=this.value">
+                        <div class="d-flex justify-content-between small text-muted"><span>Very Low</span><span>Excellent</span></div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Energy Level <span id="energy-score-display" class="badge bg-primary">5</span></label>
+                        <input type="range" class="form-range" min="1" max="10" value="5" id="quick-energy" name="energy_level"
+                               oninput="document.getElementById('energy-score-display').textContent=this.value">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Select Emotions (optional)</label>
+                        <div class="d-flex flex-wrap gap-2" id="emotion-tags">
+                            {% set emotions = ['Happy', 'Sad', 'Anxious', 'Calm', 'Angry', 'Excited', 'Tired', 'Hopeful', 'Overwhelmed', 'Grateful'] %}
+                            {% for emotion in emotions %}
+                            <button type="button" class="btn btn-sm btn-outline-secondary emotion-tag" data-emotion="{{ emotion }}">{{ emotion }}</button>
+                            {% endfor %}
+                        </div>
+                        <input type="hidden" id="selected-emotions" name="emotions" value="">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Brief Note (optional)</label>
+                        <textarea class="form-control" name="notes" id="quick-mood-notes" rows="2" placeholder="What's on your mind?"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-mindguard" onclick="submitQuickMood()">Save Mood 📊</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Goal Modal -->
+<div class="modal fade" id="addGoalModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold">🎯 Add Wellness Goal</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Goal Title *</label>
+                    <input type="text" class="form-control" id="goal-title" placeholder="e.g., Meditate for 10 minutes daily">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Category</label>
+                    <select class="form-select" id="goal-category">
+                        <option value="mindfulness">Mindfulness</option>
+                        <option value="sleep">Sleep</option>
+                        <option value="exercise">Exercise</option>
+                        <option value="social">Social Connection</option>
+                        <option value="nutrition">Nutrition</option>
+                        <option value="journaling">Journaling</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Target (days): <span id="goal-days-display">7</span></label>
+                    <input type="range" class="form-range" min="1" max="30" value="7" id="goal-days"
+                           oninput="document.getElementById('goal-days-display').textContent=this.value">
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-warning text-white" onclick="addGoal()">Add Goal 🎯</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Mood chart
+{% if mood_chart_data %}
+const ctx = document.getElementById('moodChart').getContext('2d');
+new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: {{ mood_chart_labels|tojson }},
+        datasets: [{
+            label: 'Mood Score',
+            data: {{ mood_chart_data|tojson }},
+            borderColor: '#28a745',
+            backgroundColor: 'rgba(40,167,69,0.1)',
+            tension: 0.4,
+            fill: true,
+            pointBackgroundColor: '#28a745',
+            pointRadius: 5,
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+            y: { min: 1, max: 10, ticks: { stepSize: 1 } }
+        }
+    }
+});
+{% endif %}
+
+// Load wellness tip on page load
+loadWellnessTip();
+</script>
+{% endblock %}

@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Register{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="text-center mb-4">
+                <div style="font-size:3rem;">🧠</div>
+                <h2 class="fw-bold text-mindguard">Join MindGuard</h2>
+                <p class="text-muted">Your safe space for mental wellness</p>
+            </div>
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <h4 class="fw-bold mb-4">Create Account</h4>
+                    <form method="POST" action="{{ url_for('auth.register') }}">
+                        {{ form.hidden_tag() }}
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                {{ form.username.label(class="form-label fw-semibold") }}
+                                {{ form.username(class="form-control" + (" is-invalid" if form.username.errors else ""), placeholder="Choose a username") }}
+                                {% for error in form.username.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.display_name.label(class="form-label fw-semibold") }}
+                                {{ form.display_name(class="form-control" + (" is-invalid" if form.display_name.errors else ""), placeholder="How should we call you?") }}
+                            </div>
+                            <div class="col-12">
+                                {{ form.email.label(class="form-label fw-semibold") }}
+                                {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else ""), placeholder="your@email.com") }}
+                                {% for error in form.email.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                            </div>
+                            <div class="col-12">
+                                {{ form.age_group.label(class="form-label fw-semibold") }}
+                                {{ form.age_group(class="form-select") }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.password.label(class="form-label fw-semibold") }}
+                                {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else ""), placeholder="Min 8 characters") }}
+                                {% for error in form.password.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.confirm_password.label(class="form-label fw-semibold") }}
+                                {{ form.confirm_password(class="form-control" + (" is-invalid" if form.confirm_password.errors else ""), placeholder="Repeat password") }}
+                                {% for error in form.confirm_password.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                            </div>
+                            <div class="col-12">
+                                <div class="alert alert-light border-start border-success border-3 small">
+                                    <strong>Before you continue:</strong> MindGuard is a wellness awareness companion and is <strong>not a substitute</strong> for professional mental health care. If you are in crisis, please call <strong>iCall: 9152987821</strong>.
+                                </div>
+                                <div class="form-check">
+                                    {{ form.consent(class="form-check-input" + (" is-invalid" if form.consent.errors else "")) }}
+                                    {{ form.consent.label(class="form-check-label small") }}
+                                    {% for error in form.consent.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-mindguard w-100 py-2 fw-semibold mt-3">Create Account 💚</button>
+                    </form>
+                </div>
+            </div>
+            <p class="text-center mt-3 text-muted">
+                Already have an account? <a href="{{ url_for('auth.login') }}" class="text-mindguard fw-semibold">Sign In</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

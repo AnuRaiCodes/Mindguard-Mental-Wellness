@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+{% block title %}Welcome to MindGuard{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Hero -->
+    <div class="row align-items-center mb-5 py-4">
+        <div class="col-lg-6 mb-4 mb-lg-0">
+            <div class="text-center text-lg-start">
+                <div style="font-size:4rem;" class="mb-3">🧠</div>
+                <h1 class="display-5 fw-bold text-mindguard mb-3">MindGuard</h1>
+                <h2 class="h4 text-muted mb-4">Your AI-Powered Mental Health Awareness Companion</h2>
+                <p class="lead text-muted mb-4">
+                    A safe, compassionate space to learn about mental health, track your mood,
+                    journal your thoughts, and access verified support resources — powered by AI with a human heart.
+                </p>
+                <div class="d-flex gap-3 flex-wrap justify-content-center justify-content-lg-start">
+                    <a href="{{ url_for('auth.register') }}" class="btn btn-mindguard btn-lg px-4">
+                        Get Started Free <i class="bi bi-arrow-right ms-2"></i>
+                    </a>
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-outline-success btn-lg px-4">
+                        Sign In
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-lg p-4 bg-mindguard-soft">
+                <div class="row g-3 text-center">
+                    <div class="col-6">
+                        <div class="card border-0 p-3 h-100">
+                            <div class="fs-3 mb-2">💬</div>
+                            <h6 class="fw-bold">AI Mental Health Chat</h6>
+                            <small class="text-muted">Multi-agent AI with empathetic, safe conversations</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="card border-0 p-3 h-100">
+                            <div class="fs-3 mb-2">📊</div>
+                            <h6 class="fw-bold">Mood Tracking</h6>
+                            <small class="text-muted">Track and visualize your emotional patterns</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="card border-0 p-3 h-100">
+                            <div class="fs-3 mb-2">✍️</div>
+                            <h6 class="fw-bold">Guided Journaling</h6>
+                            <small class="text-muted">Reflective prompts and private entries</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="card border-0 p-3 h-100">
+                            <div class="fs-3 mb-2">🆘</div>
+                            <h6 class="fw-bold">Crisis Resources</h6>
+                            <small class="text-muted">Verified Indian helplines always accessible</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- How It Works -->
+    <div class="text-center mb-5">
+        <h2 class="fw-bold mb-3">How MindGuard Works</h2>
+        <p class="text-muted mb-5">Powered by a multi-agent AI architecture with Retrieval-Augmented Generation</p>
+        <div class="row g-4 align-items-center justify-content-center">
+            <div class="col-md-2 col-4">
+                <div class="flow-step text-center">
+                    <div class="flow-icon">👤</div>
+                    <small class="text-muted">You</small>
+                </div>
+            </div>
+            <div class="col-md-1 col-1 d-flex justify-content-center"><i class="bi bi-arrow-right text-muted"></i></div>
+            <div class="col-md-2 col-4">
+                <div class="flow-step text-center">
+                    <div class="flow-icon">🎯</div>
+                    <small class="text-muted">Orchestrator</small>
+                </div>
+            </div>
+            <div class="col-md-1 col-1 d-flex justify-content-center"><i class="bi bi-arrow-right text-muted"></i></div>
+            <div class="col-md-2 col-4">
+                <div class="flow-step text-center">
+                    <div class="flow-icon">🤖</div>
+                    <small class="text-muted">Specialized Agent</small>
+                </div>
+            </div>
+            <div class="col-md-1 col-1 d-flex justify-content-center"><i class="bi bi-arrow-right text-muted"></i></div>
+            <div class="col-md-2 col-4">
+                <div class="flow-step text-center">
+                    <div class="flow-icon">📚</div>
+                    <small class="text-muted">RAG + Groq AI</small>
+                </div>
+            </div>
+            <div class="col-md-1 col-1 d-flex justify-content-center"><i class="bi bi-arrow-right text-muted"></i></div>
+            <div class="col-md-2 col-4">
+                <div class="flow-step text-center">
+                    <div class="flow-icon">🛡️</div>
+                    <small class="text-muted">Safe Response</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Agents -->
+    <div class="text-center mb-5">
+        <h2 class="fw-bold mb-3">Meet the Specialized Agents</h2>
+        <div class="row g-3 mt-2">
+            <div class="col-md-3 col-6">
+                <div class="card border-0 shadow-sm h-100 p-3 text-center">
+                    <div class="fs-2 mb-2">🧠</div>
+                    <h6 class="fw-bold">Awareness Agent</h6>
+                    <small class="text-muted">Trusted mental health education, psychoeducation, and stigma reduction</small>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="card border-0 shadow-sm h-100 p-3 text-center">
+                    <div class="fs-2 mb-2">💚</div>
+                    <h6 class="fw-bold">Emotional Support Agent</h6>
+                    <small class="text-muted">Empathetic, non-judgmental listening and emotional validation</small>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="card border-0 shadow-sm h-100 p-3 text-center">
+                    <div class="fs-2 mb-2">🛡️</div>
+                    <h6 class="fw-bold">Safety & Wellbeing Agent</h6>
+                    <small class="text-muted">Immediate safe response to distress signals with crisis resources</small>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="card border-0 shadow-sm h-100 p-3 text-center">
+                    <div class="fs-2 mb-2">🌱</div>
+                    <h6 class="fw-bold">Prevention & Wellness Agent</h6>
+                    <small class="text-muted">Evidence-based coping, mindfulness, and professional resource guidance</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Disclaimer -->
+    <div class="alert alert-info border-0 text-center">
+        <i class="bi bi-info-circle me-2"></i>
+        <strong>Important:</strong> MindGuard is a wellness awareness companion — not a substitute for professional mental health care.
+        In crisis? <strong>Call iCall: 9152987821</strong> or <strong>Vandrevala: 1860-2662-345</strong> (24/7, free).
+    </div>
+</div>
+{% endblock %}
